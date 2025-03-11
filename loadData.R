@@ -1,0 +1,50 @@
+
+rm(list = ls())
+
+## Extracting the attributes' name ==================================== 
+attribute_names <- readLines("data/communities.names") # char string 522
+
+
+attribute_names <- gsub(pattern = "@attribute ", replacement = "", 
+                        # grepl: returns logical values for matches
+                        # extract lines starting with @attribute only 
+                        attribute_names[grepl("@attribute", attribute_names)])
+
+## split the string wrt the blank space and use 1st element
+attribute_names <- sapply(strsplit(attribute_names, " "), FUN = `[`, 1)
+
+
+## Loading the dataset ==================================== 
+
+data <- read.csv("data/communities.data", 
+                 header = FALSE, 
+                 na.strings = "?", # ? as a NA
+                 col.names = attribute_names # assign column names 
+                 ) #  1994 x 128
+
+
+# dim(data)
+# str(data)
+# head(data)
+
+# y : beta response RV -------------------------
+
+# sort(unique(data$ViolentCrimesPerPop.numeric))
+
+# options(digits = 8)
+# sort(data$ViolentCrimesPerPop)
+
+# Setting new state ids from 1 to 46 states ----------------
+# but keeping the original state names as it in the form of name of vector
+
+#> Stan doesn't like how there are only 46 unique state numbers but 
+#> the maximum number is 56. We need to reassign continuous numbers.
+
+unique_states <- sort(unique(data$state)) # 46
+new_state_ids <- setNames(seq_along(unique_states), unique_states) 
+
+# adding new column of new state 
+# access the vector through the "names"
+# the return value is then a new state values
+data$statenew <- new_state_ids[as.character(data$state)]
+
