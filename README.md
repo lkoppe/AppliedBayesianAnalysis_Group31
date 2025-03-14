@@ -33,7 +33,9 @@ The mean (`mu`) is modeled as:
 mu = logit^-1(alpha + beta1 * x1 + beta2 * x2 + beta3 * x3 + beta4 * x4 + beta5 * x5)
 ```
 
-Where: - `alpha`: Intercept - `beta1`, `beta2`, ..., `beta5`: Coefficients for predictors (`x1`, `x2`, ..., `x5`).
+Where: 
+- `alpha`: Intercept
+- `beta1`, `beta2`, ..., `beta5`: Coefficients for predictors (`x1`, `x2`, ..., `x5`).
 
 #### Shape Parameters
 
@@ -44,7 +46,8 @@ a = mu * phi
 b = (1 - mu) * phi
 ```
 
-Where: - `phi`: Precision parameter, representing the concentration of the Beta distribution.
+Where: 
+- `phi`: Precision parameter, representing the concentration of the Beta distribution.
 
 #### Likelihood
 
