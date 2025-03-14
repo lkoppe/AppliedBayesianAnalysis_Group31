@@ -32,26 +32,17 @@ knots_list <- list(
   lat_knots  = quantile(data$Latitude_scaled,  probs = c(0.25, 0.5, 0.75))
 )
 
-
 formula.base <- as.formula(ViolentCrimesPerPop ~ s(Latitude_scaled, bs = "cs") + 
                              s(Longitude_scaled, bs = "cs"))
 
 formula.cs <- update(formula.base, paste(". ~ . +", paste(five_features, collapse = " + ")))
 
-# for 10 features
-priors.cs <- c(
-  prior(normal(-1.0, 0.1), class = "Intercept"),  
-  prior(normal(0, 2), class = "b"),                
-  prior(exponential(8), class = "sds"),         # Smoothness of splines
-  prior(gamma(2, 0.35), class = "phi")           # Precision parameter for Beta regression
-  )
-
-# for 5 features
+# for 5 and 10 features
 priors.cs <- c(
   prior(normal(0, 1), class = "b"),             # Regular slope priors for covariates
   prior(normal(-1, 0.1), class = "Intercept"),     # Intercept prior
-  prior(exponential(8), class = "sds"),         # Smoothness of splines
-  prior(gamma(2, 0.4), class = "phi")           # Precision parameter for Beta regression
+  prior(exponential(500), class = "sds"),         # Smoothness of splines
+  prior(gamma(4, 0.5), class = "phi")           # Precision parameter for Beta regression
 )
 
 # ------------------------------------------------------------------------------
@@ -71,7 +62,7 @@ fit_prior_cs <- brm(
 
 
 set.seed(42)
-ppc_plot_cs <- pp_check(fit_prior_cs, ndraws = 30) +
+ppc_plot_cs <- pp_check(fit_prior_cs, ndraws = 200) +
   theme_bw(base_size = 22) +
   labs(x = "Normalized Violent Crimes per Capita")
 
@@ -127,7 +118,7 @@ for (i in seq_along(trace_plots_cs)) {
 # Posterior Density Plot
 # ------------------------------------------------------------------------------
 set.seed(42)
-cs_pd <- pp_check(fit_cs) +
+cs_pd <- pp_check(fit_cs, ndraws = 100) +
   theme_bw(base_size = 22) 
 ggsave(plot = cs_pd, filename = "Results/cs_model/cs_pd.png")
 saveRDS(cs_pd, file = "Results/cs_model/R_data_files/cs_pd.rds")
@@ -137,17 +128,18 @@ saveRDS(cs_pd, file = "Results/cs_model/R_data_files/cs_pd.rds")
 # ------------------------------------------------------------------------------
 sink("Results/cs_model/cs_elpd.txt")
 cat("In-Sample ELPD:\n")
-print(sum(colMeans(log_lik(fit_cs))))
-cat("\nOut-Of-Sample ELPD:\n")
-print(loo(fit_cs))
-sink()   
+(elpd.in.cs <- sum(colMeans(log_lik(fit_cs, cores = 5)))) #136.7929
+#  x  == (4 chains x  iterations) x 
 
+cat("\nOut-Of-Sample ELPD:\n")
+(elpd.out.cs <- loo(fit_cs)) #123.0
+sink()  
 # ------------------------------------------------------------------------------
 # Residual Plot
 # ------------------------------------------------------------------------------
 y_pred_cs <- posterior_predict(fit_cs)
 y_pred_mean_cs <- colMeans(y_pred_cs)
-y_obs_cs <- fit_cs$data$y
+y_obs_cs <- fit_cs$data$ViolentCrimesPerPop
 residuals_cs <- y_obs_cs - y_pred_mean_cs
 data_plot_cs <- data.frame(y_obs = y_obs_cs, residuals = residuals_cs)
 

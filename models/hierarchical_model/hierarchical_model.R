@@ -8,15 +8,14 @@ library(bayesplot)
 # ------------------------------------------------------------------------------
 dir.create("Results/hierarchical_model", 
            recursive = TRUE, showWarnings = FALSE)
-dir.create("Results/hierarchical_model/R_data_files", 
-           
+dir.create("Results/hierarchical_model/R_data_files",
            recursive = TRUE, showWarnings = FALSE)
 
 # # ------------------------------------------------------------------------------
 # # Load Data
 # # ------------------------------------------------------------------------------
-# source("data_upload.R")
-# source("feature_selections.R")
+source("data_upload.R")
+source("feature_selections.R")
 
 # ------------------------------------------------------------------------------
 # Formula & Priors for Hierarchical Model
@@ -34,10 +33,6 @@ formula.hier <- as.formula(
         paste(five_features, collapse = " + "), 
         "| statenew )")
   )
-
-  # ViolentCrimesPerPop ~ 
-  # PctKids2Par + PctImmigRec10 + PctPopUnderPov + medFamInc + racePctWhite +  
-  # (1 + PctKids2Par + PctImmigRec10 + PctPopUnderPov + medFamInc + racePctWhite | statenew)  
 
 # ------------------------------------------------------------------------------
 # Prior Predictive Check
@@ -110,12 +105,6 @@ for (i in seq_along(trace_plots_hier)) {
 # Posterior Density Plot
 # ------------------------------------------------------------------------------
 set.seed(42)
-# ? ? ? ? ?  ?? ? ?  Problem with title fitting on the plot
-
-
-
-
-
 hierarchical_pd <- pp_check(brm.hier)
 ggsave(plot = hierarchical_pd, filename = "Results/hierarchical_model/hierarchical_pd.png")
 saveRDS(hierarchical_pd, file = "Results/hierarchical_model/R_data_files/hierarchical_pd.rds")
@@ -125,10 +114,12 @@ saveRDS(hierarchical_pd, file = "Results/hierarchical_model/R_data_files/hierarc
 # ------------------------------------------------------------------------------
 sink("Results/hierarchical_model/hierarchical_elpd.txt")
 cat("In-Sample ELPD:\n")
-print(sum(colMeans(log_lik(brm.hier))))
+(elpd.in.hier <- sum(colMeans(log_lik(brm.hier, cores = 5)))) #1735.366
+# 8000 x 1994 == (4 chains x 2000 iterations) x 1994
+
 cat("\nOut-Of-Sample ELPD:\n")
-print(loo(brm.hier))
-sink()   
+(elpd.out.hier <- loo(brm.hier)) #1645.4
+sink()
 
 # ------------------------------------------------------------------------------
 # Residual Plot

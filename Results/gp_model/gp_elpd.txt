@@ -1,0 +1,22 @@
+In-Sample ELPD:
+
+#177.1327
+Out-Of-Sample ELPD:
+
+Computed from 8000 by 278 log-likelihood matrix.
+
+         Estimate   SE
+elpd_loo    146.7 25.1
+p_loo        50.0 14.3
+looic      -293.5 50.3
+------
+MCSE of elpd_loo is NA.
+MCSE and ESS estimates assume MCMC draws (r_eff in [0.4, 2.0]).
+
+Pareto k diagnostic values:
+                         Count Pct.    Min. ESS
+(-Inf, 0.7]   (good)     275   98.9%   406     
+   (0.7, 1]   (bad)        0    0.0%   <NA>    
+   (1, Inf)   (very bad)   3    1.1%   <NA>    
+See help('pareto-k-diagnostic') for details.
+[1] 177.1327

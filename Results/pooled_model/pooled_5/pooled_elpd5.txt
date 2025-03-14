@@ -1,0 +1,17 @@
+In-Sample ELPD:
+[1] 1473.79
+
+Out-Of-Sample ELPD:
+
+Computed from 8000 by 1994 log-likelihood matrix.
+
+         Estimate    SE
+elpd_loo   1461.6  71.8
+p_loo        23.7   4.1
+looic     -2923.3 143.5
+------
+MCSE of elpd_loo is 0.1.
+MCSE and ESS estimates assume MCMC draws (r_eff in [0.5, 1.7]).
+
+All Pareto k estimates are good (k < 0.7).
+See help('pareto-k-diagnostic') for details.

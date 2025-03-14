@@ -1,5 +1,14 @@
 
 # ============== Pooled model with 10 features ==================================
+library(brms)
+library(ggplot2)
+library(bayesplot)
+
+# ------------------------------------------------------------------------------
+# Load Data
+# ------------------------------------------------------------------------------
+source("data_upload.R")
+source("feature_selections.R")
 
 # ------------------------------------------------------------------------------
 # Setup: Create Folders If Not Exist
@@ -12,13 +21,13 @@ dir.create("Results/pooled_model/pooled_10/R_data_files_10",
 # ------------------------------------------------------------------------------
 # Formula & Priors for Pooled Model
 # ------------------------------------------------------------------------------
+formula.pool10 <- as.formula(paste("ViolentCrimesPerPop ~", 
+                                   paste(ten_features, collapse = " + ")))
+
 prior.pool10 <- 
   prior(normal(-1.4, 0.1), class = "Intercept") +
   prior(normal(0, 4), class = "b") + 
   prior(gamma(2, 0.1), class = "phi")
-
-formula.pool10 <- as.formula(paste("ViolentCrimesPerPop ~", 
-                                  paste(ten_features, collapse = " + ")))
 
 # ------------------------------------------------------------------------------
 # Prior Predictive Check
@@ -107,10 +116,14 @@ saveRDS(pooled_pd10, file = "Results/pooled_model/pooled_10/R_data_files_10/pool
 # ------------------------------------------------------------------------------
 sink("Results/pooled_model/pooled_10/pooled_elpd10.txt")
 cat("In-Sample ELPD:\n")
-print(sum(colMeans(log_lik(brm.pool10))))
+(elpd.in.pool10 <- sum(colMeans(log_lik(brm.pool10, cores = 5)))) #1501.446
+# 8000 x 1994 == (4 chains x 2000 iterations) x 1994
+
 cat("\nOut-Of-Sample ELPD:\n")
-print(loo(brm.pool10))
+(elpd.out.pool10 <- loo(brm.pool10)) #1482.6
 sink()   
+
+
 
 # ------------------------------------------------------------------------------
 # Residual Plot

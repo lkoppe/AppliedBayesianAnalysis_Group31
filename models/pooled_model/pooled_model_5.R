@@ -17,16 +17,18 @@ dir.create("Results/pooled_model/pooled_5/R_data_files_5",
 # ------------------------------------------------------------------------------
 source("data_upload.R")
 source("feature_selections.R")
+
 # ------------------------------------------------------------------------------
 # Formula & Priors for Pooled Model
 # ------------------------------------------------------------------------------
+
+formula.pool5 <- as.formula(paste("ViolentCrimesPerPop ~", 
+                                  paste(five_features, collapse = " + ")))
+
 prior.pool5 <- 
   prior(normal(-1.4, 0.1), class = "Intercept") +
   prior(normal(0, 4), class = "b") + 
   prior(gamma(2, 0.1), class = "phi")
-
-formula.pool5 <- as.formula(paste("ViolentCrimesPerPop ~", 
-                                   paste(five_features, collapse = " + ")))
 
 # ------------------------------------------------------------------------------
 # Prior Predictive Check
@@ -115,9 +117,11 @@ saveRDS(pooled_pd5, file = "Results/pooled_model/pooled_5/R_data_files_5/pooled_
 # ------------------------------------------------------------------------------
 sink("Results/pooled_model/pooled_5/pooled_elpd5.txt")
 cat("In-Sample ELPD:\n")
-print(sum(colMeans(log_lik(brm.pool5))))
+(elpd.in.pool5 <- sum(colMeans(log_lik(brm.pool5, cores = 5)))) #1473.79
+# 8000 x 1994 == (4 chains x 2000 iterations) x 1994
+
 cat("\nOut-Of-Sample ELPD:\n")
-print(loo(brm.pool5))
+(elpd.out.pool5 <- loo(brm.pool5)) #1461.6
 sink()   
 
 # ------------------------------------------------------------------------------

@@ -1,0 +1,6 @@
+Method: stacking
+------
+                   weight
+pooled_model5      0.038 
+pooled_model10     0.124 
+hierarchical_model 0.838 

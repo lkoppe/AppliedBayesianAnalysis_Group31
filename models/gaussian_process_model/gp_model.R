@@ -18,32 +18,26 @@ source("feature_selections.R")
 source("spatial_prep.R")
 
 # Prepare data for the model
-data <- list(
-  y = data$ViolentCrimesPerPop,
-  PctKids2Par = data$PctKids2Par,
-  PctImmigRec10 = data$PctIlleg,
-  PctPopUnderPov = data$PctFam2Par,
-  medFamInc = data$racePctWhite,
-  racePctWhite = data$PctYoungKids2Par,
-  lat = data$Latitude_scaled,
-  lon = data$Longitude_scaled,
-  N = nrow(data)
-)
+spatial.features <- c(five_features, "Longitude_scaled", 
+                      "Latitude_scaled", "ViolentCrimesPerPop")
+
+data <- data %>% select(all_of(c(spatial.features)))
+names(data)
+dim(data)
 
 # ------------------------------------------------------------------------------
 # Formula & Priors for Gaussian Process Model
 # ------------------------------------------------------------------------------
-formula.gp <- bf(y ~ gp(lat, lon) +
-  PctKids2Par + PctImmigRec10 + PctPopUnderPov + 
-  medFamInc + racePctWhite
-  )
+formula.base2 <- as.formula(ViolentCrimesPerPop ~ gp(Latitude_scaled, Longitude_scaled))
+
+formula.gp <- update(formula.base2, paste(". ~ . +", paste(five_features, collapse = " + ")))
 
 priors.gp <- c(
   prior(normal(-1.0, 0.1), class = "Intercept"),  
   prior(normal(0, 2), class = "b"),              
   prior(gamma(2, 0.4), class = "phi"),           
   prior(exponential(8), class = "sdgp"),         
-  prior(exponential(2), class = "lscale", coef = "gplatlon")  
+  prior(exponential(2), class = "lscale")
 )
 
 
@@ -57,6 +51,7 @@ fit_prior_gp <- brm(
   family = "beta",
   sample_prior = "only",  
   chains = 4, 
+  cores = 4,
   iter = 4000
 )
 
@@ -75,8 +70,9 @@ fit_gp <- brm(
   data = data,
   prior = priors.gp,
   family = "beta",
-  chains = 4,
-  iter = 6000,
+  chains = 4, 
+  cores = 4,
+  iter = 4000,
   seed = 42
 )
 
@@ -114,7 +110,7 @@ for (i in seq_along(trace_plots_gp)) {
 # ------------------------------------------------------------------------------
 # Posterior Density Plot
 # ------------------------------------------------------------------------------
-gp_pd <- pp_check(fit_gp) +
+gp_pd <- pp_check(fit_gp, ndraws = 100) +
   theme_bw(base_size = 22) 
 ggsave(plot = gp_pd, filename = "Results/gp_model/gp_pd.png")
 saveRDS(gp_pd, file = "Results/gp_model/R_data_files/gp_pd.rds")
@@ -124,10 +120,12 @@ saveRDS(gp_pd, file = "Results/gp_model/R_data_files/gp_pd.rds")
 # ------------------------------------------------------------------------------
 sink("Results/gp_model/gp_elpd.txt")
 cat("In-Sample ELPD:\n")
-print(sum(colMeans(log_lik(fit_gp))))
+(elpd.in.gp <- sum(colMeans(log_lik(fit_gp, cores = 5)))) #177.1327
+#  x  == (4 chains x 4000 iterations) x  
+
 cat("\nOut-Of-Sample ELPD:\n")
-print(loo(fit_gp))
-sink()   
+(elpd.out.gp <- loo(fit_gp)) #146.7
+sink()  
 
 # ------------------------------------------------------------------------------
 # Residual Plot
@@ -149,4 +147,3 @@ gp_residual_plot <- ggplot(data_plot_gp, aes(x = y_obs, y = residuals)) +
 
 ggsave(plot = gp_residual_plot, filename = "Results/gp_model/gp_residual.png")
 saveRDS(gp_residual_plot, file = "Results/gp_model/R_data_files/gp_residual.rds")
-

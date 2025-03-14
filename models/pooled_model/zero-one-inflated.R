@@ -107,6 +107,7 @@ saveRDS(pooled.zoi_pd5, file = "Results/pooled_model/zoi_model/R_data_files_zoi/
 # ------------------------------------------------------------------------------
 # ELPD Calculation
 # ------------------------------------------------------------------------------
+
 sink("Results/pooled_model/zoi_model/zoi_elpd5.txt")
 cat("In-Sample ELPD:\n")
 print(sum(colMeans(log_lik(brms.pool.zoi5))))
@@ -114,18 +115,22 @@ cat("\nOut-Of-Sample ELPD:\n")
 print(loo(brms.pool.zoi5))
 sink()
 
+
+# sink("Results/pooled_model/zoi_model/zoi_elpd5.txt")
+# cat("In-Sample ELPD:\n")
+# (elpd.in.pool.zoi5 <- sum(colMeans(log_lik(brms.pool.zoi5, cores = 5)))) #
+# # 8000 x 1994 == (4 chains x 2000 iterations) x 1994
+# 
+# cat("\nOut-Of-Sample ELPD:\n")
+# (elpd.out.pool.zoi5 <- loo(brms.pool.zoi5)) #
+# sink()  
+
 # ------------------------------------------------------------------------------
 # Residual Plot
 # ------------------------------------------------------------------------------
 y_pred.zoi_5 <- posterior_predict(brms.pool.zoi5)
-# y_pred_18 <- posterior_predict(brms_pool_18)
-
 residuals.zoi_5 <- brms.pool.zoi5$data$ViolentCrimesPerPop - colMeans(y_pred.zoi_5)
-# residuals_18 <- brms_pool_18$data$ViolentCrimesPerPop - colMeans(y_pred_18)
-
 data_plot.zoi_5 <- data.frame(y_obs = brms.pool.zoi5$data$ViolentCrimesPerPop, residuals = residuals.zoi_5)
-# data_plot_18 <- data.frame(y_obs = brms_pool_18$data$ViolentCrimesPerPop, residuals = residuals_18)
-
 zoi_residual_plot_5 <- ggplot(data_plot.zoi_5, aes(x = y_obs, y = residuals)) +
   geom_point(alpha = 0.5, col = "blue") + 
   geom_hline(yintercept = 0, color = "red") +
@@ -134,9 +139,4 @@ zoi_residual_plot_5 <- ggplot(data_plot.zoi_5, aes(x = y_obs, y = residuals)) +
   ggtitle("Pooled 0-1 Inflated Beta Model with 5 features") +
   theme_bw(base_size = 22)
 
-# zoi_residual_plot_18 <- ggplot(data_plot_18, aes(x = y_obs, y = residuals)) +
-#   geom_point(alpha = 0.5, col = "purple") + geom_hline(yintercept = 0, color = "red") +
-#   labs(x = "Observed", y = "Residuals") + theme_bw(base_size = 22)
-
 ggsave(plot = zoi_residual_plot_5, filename = "Results/pooled_model/zoi_model/zoi_residual_5.png")
-# ggsave(plot = zoi_residual_plot_18, filename = "Results/pooled_model/zoi_model/zoi_residual_18.png")

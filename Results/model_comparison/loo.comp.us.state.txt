@@ -1,0 +1,5 @@
+                   elpd_diff se_diff
+zoi_model_5           0.0       0.0 
+hierarchical_model   -9.8      99.3 
+pooled_model10     -172.6      84.6 
+pooled_model5      -193.6      84.1 
